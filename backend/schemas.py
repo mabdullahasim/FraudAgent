@@ -9,7 +9,7 @@ class Transaction(BaseModel):
     time: str
     fraud_probability: float
 
-    class Review(BaseModel):
+class Review(BaseModel):
     trans_num: str
     action: str
     risk: str

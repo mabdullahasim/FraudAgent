@@ -3,9 +3,16 @@ from src.tools import get_txn, score_transaction, score_all, history
 from src.agent import review_transaction
 from backend.schemas import Transaction, Review, Feedback
 from backend.db import init_db, save_review, get_review, save_feedback
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 init_db()
 score_all()
 
@@ -55,8 +62,12 @@ def run_review(trans_num: str):
     save_review(trans_num, decision)
     return Review(**get_review(trans_num))
 
-@app.get("/transactions/{trans_num}/review", response_model = Review)
+@app.get("/transactions/{trans_num}/review", response_model=Review)
 def read_review(trans_num: str):
+    review = get_review(trans_num)
+    if review is None:
+        raise HTTPException(status_code=404, detail="no review yet")
+    return Review(**review)
     
 
 @app.post("/transactions/{trans_num}/feedback", response_model=Review)

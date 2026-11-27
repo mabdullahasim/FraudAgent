@@ -14,14 +14,13 @@ history["hour"] = history["trans_date_trans_time"].dt.hour
 def score_transaction(txn):
     t = pd.to_datetime(txn["trans_date_trans_time"])
     hour = t.hour
-     row = {
+    row = {
         "amt": txn["amt"],
         "hour": hour,
         "dayofweek": t.dayofweek,
         "is_night": int(hour in [22, 23, 0, 1, 2, 3]),
         "amt_vs_card": txn["amt"] / stats["card_avg"].get(txn["cc_num"], stats["overall_avg"]),
-        "card_night_share": stats["card_night"].get(txn["cc_num"], stats["overall_night"]),
-        txn["category"]: 1,
+        "card_night_share": stats["card_night"].get(txn["cc_num"], stats["overall_night"]), txn["category"]: 1,
     }
     X = pd.DataFrame([row]).reindex(columns=columns, fill_value=0).astype(float)
     return {"fraud_probability": round(float(model.predict_proba(X)[0, 1]), 3)}
@@ -48,7 +47,7 @@ def check_duplicates(cc_num, t, amt):
 
 def check_merchant(cc_num, merchant, t):
     t = pd.to_datetime(t)
-    df =  history[(history["cc_num"] == cc_num) & (history["merchant"] == merchant & history["trans_date_trans_time"] < t)]
+    df = history[(history["cc_num"] == cc_num) & (history["merchant"] == merchant) & (history["trans_date_trans_time"] < t)]
     return {
         "past_visits": len(df),
         "seen_before": len(df) > 0,

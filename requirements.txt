@@ -7,3 +7,5 @@ matplotlib
 anthropic
 python-dotenv
 ipykernel
+fastapi
+uvicorn
