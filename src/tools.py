@@ -92,3 +92,22 @@ def get_transaction_facts(txn):
 
 def get_txn(trans_num):
     return history[history["trans_num"] == trans_num].iloc[0]
+
+def score_all():
+    t = history["trans_date_trans_time"]
+    hour = t.dt.hour
+
+    X = pd.DataFrame({
+        "amt": history["amt"],
+        "hour": hour,
+        "dayofweek": t.dt.dayofweek,
+        "is_night": hour.isin([22, 23, 0, 1, 2, 3]).astype(int),
+        "amt_vs_card": history["amt"] / history["cc_num"].map(stats["card_avg"]).fillna(stats["overall_avg"]),
+        "card_night_share": history["cc_num"].map(stats["card_night"]).fillna(stats["overall_night"]),
+    })
+
+    X = pd.concat([X, pd.get_dummies(history["category"])], axis=1)
+    X = X.reindex(columns=columns, fill_value=0).astype(float)
+
+    history["fraud_probability"] = model.predict_proba(X)[:, 1].round(3)
+    
